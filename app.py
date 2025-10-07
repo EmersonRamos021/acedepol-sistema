@@ -41,7 +41,7 @@ def load_data():
 @app.route('/')
 def index():
     """Página principal do dashboard"""
-    return render_template('index.html')
+    return render_template('dashboard.html')
 
 @app.route('/api/stats')
 def get_stats():
