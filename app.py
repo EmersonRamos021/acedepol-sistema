@@ -6,17 +6,24 @@ from flask import Flask, render_template, jsonify
 import json
 import os
 from datetime import datetime, timedelta
+import traceback
 
 app = Flask(__name__)
 
 # Tentar usar banco de dados
+USE_DATABASE = False
+load_data_db = None
+
 try:
     from database import load_data as load_data_db
     USE_DATABASE = True
     print("✅ Usando banco de dados PostgreSQL")
-except ImportError:
-    USE_DATABASE = False
-    print("⚠️ Usando arquivo JSON")
+except ImportError as e:
+    print(f"⚠️ Não foi possível importar database: {e}")
+    print("⚠️ Usando modo fallback (sem banco)")
+except Exception as e:
+    print(f"❌ Erro ao importar database: {e}")
+    print(traceback.format_exc())
 
 # Arquivo de dados (fallback)
 DATA_FILE = 'ponto_data.json'
@@ -41,7 +48,26 @@ def load_data():
 @app.route('/')
 def index():
     """Página principal do dashboard"""
-    return render_template('dashboard.html')
+    try:
+        return render_template('dashboard.html')
+    except Exception as e:
+        return f"""
+        <h1>Erro ao carregar dashboard</h1>
+        <p>Erro: {str(e)}</p>
+        <pre>{traceback.format_exc()}</pre>
+        """, 500
+
+@app.route('/debug')
+def debug():
+    """Rota de debug para verificar configuração"""
+    info = {
+        'use_database': USE_DATABASE,
+        'database_url_exists': 'DATABASE_URL' in os.environ,
+        'database_module': 'database' in dir(),
+        'python_version': os.sys.version,
+        'env_vars': list(os.environ.keys())
+    }
+    return jsonify(info)
 
 @app.route('/api/stats')
 def get_stats():
