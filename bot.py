@@ -296,6 +296,9 @@ class PainelPonto(ui.View):
         await self.mostrar_status(interaction)
     
     async def processar_ponto(self, interaction: discord.Interaction, tipo):
+        # OTIMIZAÇÃO: Responder imediatamente para evitar timeout de 3 segundos
+        await interaction.response.defer(ephemeral=True)
+        
         user_id = str(interaction.user.id)
         user_name = interaction.user.display_name
         
@@ -305,7 +308,7 @@ class PainelPonto(ui.View):
                 description="Você não tem cargo autorizado!",
                 color=COLORS["error"]
             )
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            await interaction.followup.send(embed=embed, ephemeral=True)
             return
         
         if not is_in_voice_channel(interaction.user):
@@ -314,7 +317,7 @@ class PainelPonto(ui.View):
                 description=MESSAGES["voice_required"],
                 color=COLORS["error"]
             )
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            await interaction.followup.send(embed=embed, ephemeral=True)
             return
         
         # Verifica se está em canal permitido
@@ -324,7 +327,7 @@ class PainelPonto(ui.View):
                 description="Este canal de voz não está autorizado para registro de ponto!\n\nContate um administrador para configurar os canais permitidos.",
                 color=COLORS["error"]
             )
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            await interaction.followup.send(embed=embed, ephemeral=True)
             return
         
         data = load_data()
@@ -341,7 +344,7 @@ class PainelPonto(ui.View):
                     description="Você já tem um ponto aberto!",
                     color=COLORS["warning"]
                 )
-                await interaction.response.send_message(embed=embed, ephemeral=True)
+                await interaction.followup.send(embed=embed, ephemeral=True)
                 return
             
             data[user_id]['current_session'] = {
@@ -382,7 +385,7 @@ class PainelPonto(ui.View):
                     description="Você não tem ponto aberto!",
                     color=COLORS["warning"]
                 )
-                await interaction.response.send_message(embed=embed, ephemeral=True)
+                await interaction.followup.send(embed=embed, ephemeral=True)
                 return
             
             session = data[user_id]['current_session']
@@ -430,7 +433,7 @@ class PainelPonto(ui.View):
             )
         
         save_data(data)
-        await interaction.response.send_message(embed=embed, ephemeral=True)
+        await interaction.followup.send(embed=embed, ephemeral=True)
     
     async def mostrar_horarios(self, interaction: discord.Interaction):
         user_id = str(interaction.user.id)
