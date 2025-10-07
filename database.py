@@ -83,7 +83,11 @@ def load_data():
         conn.close()
         
         if result:
-            return json.loads(result[0])
+            data = result[0]
+            # Se já é dict, retorna direto; se é string, faz parse
+            if isinstance(data, dict):
+                return data
+            return json.loads(data)
         return {}
     except Exception as e:
         print(f"❌ Erro ao carregar dados: {e}")
@@ -121,7 +125,11 @@ def load_server_config():
         conn.close()
         
         if result:
-            return json.loads(result[0])
+            config = result[0]
+            # Se já é dict, retorna direto; se é string, faz parse
+            if isinstance(config, dict):
+                return config
+            return json.loads(config)
         return {}
     except Exception as e:
         print(f"❌ Erro ao carregar configurações: {e}")
